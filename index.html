@@ -16,7 +16,7 @@
 
 <body>
     <style>
-        .col, .form-control, .col-md-3{
+        .col, .form-control,.form-select{
             margin: 10px;
         }
         
@@ -51,78 +51,62 @@
             var gender = document.getElementById('gender').value;
             var phone = document.getElementById("prefix").value + document.getElementById("number").value;
             console.log(fullName, email, gender,phone);
-            clevertap.onUserLogin.push({
+            if (phone.length < 10){
+                clevertap.onUserLogin.push({
                     Site: {
                         Name: fullName, // User's name
                         Email: email, // User's email
                         Gender: gender === "" ? "M" : gender , // Can be either M or F
-                        Phone: phone,
                         "MSG-email": true, // Disable email notifications
                         "MSG-push": true, // Enable push notifications
                     }
                 });
+            }
+            else{
+                clevertap.onUserLogin.push({
+                    Site: {
+                        Name: fullName, // User's name
+                        Email: email, // User's email
+                        Gender: gender === "" ? "M" : gender , // Can be either M or F
+                        Phone : phone,
+                        "MSG-email": true, // Disable email notifications
+                        "MSG-push": true, // Enable push notifications
+                    }
+                });
+            }
+            
         }
 
-        function addEventProp(){
-            var row = document.createElement("div")
-            row.setAttribute("class","row");
-            var col1 = document.createElement("div")
-            var col2 = document.createElement("div")
-            var col3 = document.createElement("div")
-            col1.setAttribute("class","col")
-            col2.setAttribute("class","col")
-            col3.setAttribute("class","col")
-            var propType = document.createElement("input");
-            propType.setAttribute("type","checkbox")
-            propType.setAttribute("class","form-check-input")
-            propType.setAttribute("id","propType"+count)
-            var lable = document.createElement("label");
-            lable.setAttribute("for","propType"+count);
-            lable.setAttribute("class","form-check-label");
-            lable.innerHTML = " Int";
-            col3.appendChild(propType);
-            col3.appendChild(lable);
-            var propName = document.createElement("input")
-            propName.setAttribute("class","form-control");
-            propName.setAttribute("type","text");
-            propName.setAttribute("placeholder","Property Name");
-            propName.setAttribute("id","propName"+count);
-            col1.appendChild(propName);
-            var propVal = document.createElement("input")
-            propVal.setAttribute("class","form-control");
-            propVal.setAttribute("type","text");
-            propVal.setAttribute("placeholder","Property Value");
-            propVal.setAttribute("id","propVal"+count);
-            col2.appendChild(propVal);
-            count++
-            row.appendChild(col1);
-            row.appendChild(col2);
-            row.appendChild(col3)
-            document.getElementById("eventPush").appendChild(row)
+        function addProp(){
+            var html = '<div class="col"><input class="form-control" type="text"  id="propName'+count+'" placeholder="Property Name"></div><div class="col-md-2 col"><select id="propType'+count+'" class="form-select col" onchange="changeType(this.id)" ><option value="text">Text</option><option value="number">Number</option><option value="date">Date</option></select></div><div class="col"><input type="text" id="propVal'+count+'" class="form-control" placeholder="Property Value"></div>'
+            var row = document.createElement('div')
+            row.setAttribute("class", "row")
+            row.innerHTML = html
+            document.getElementById('eventPush').appendChild(row);
+            count++;
+        }
 
+        function changeType(id){
+            var c = id.charAt(id.length-1)
+            document.getElementById("propVal"+c).type = document.getElementById(id).value
+            
         }
 
         function eventPush(){
-
             var eventName = document.getElementById("eventName").value;
             var eventProps = []
             for (var i =0 ;i < count; i++){
                 var propName = document.getElementById("propName"+i).value;
                 var propVal = document.getElementById("propVal"+i).value;
-                var propType = document.getElementById("propType"+i).checked;
-                if (propType){
-                    propVal = parseInt(propVal);
-                }
+                var propType = document.getElementById("propType"+i).value;
+                if (propType === "number") propVal =  parseInt(propVal);
+                if (propType === "Date") propVal = new Date(propVal);
                 eventProps.push([propName,propVal])
             }
             var obj = Object.fromEntries(eventProps);
             clevertap.event.push(eventName, obj);
             console.log("Event Pushed :" , eventName)
-            
-            
-
-
-
+            console.log(obj)
         }
     </script>
 
@@ -135,14 +119,14 @@
                 <input class='form-control' type="text" id="full" placeholder="Full Name" required>
                 <input class='form-control' type="text" id="email" placeholder="Email">
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-md-3 col">
                         <input class="form-control" type="text" id="prefix" value="+91">
                     </div>
                     <div class="col">
                         <input class="form-control" type="text" id="number" placeholder="Phone Number">
                     </div>
                 </div>
-                <select class="form-control" id="gender">
+                <select class="form-select" id="gender">
                     <option value="">-Select Gender-</option>
                     <option value="M">Male</option>
                     <option value="F">Female</option>
@@ -160,28 +144,16 @@
                         <input id="eventName" class="form-control" type="text" placeholder="Event Name"> 
                     </div>
                     <div class="col">
-                        <button class="btn btn-dark" onclick="addEventProp()"> + Event Property</button>
+                        <button class="btn btn-dark col" onclick="addProp()"> + Event Property</button>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col">
                         <button class="btn btn-dark" onclick="eventPush()"> Submit </button>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="btnn">CLOSE</div>
-        <script>
-            var btn = document.querySelector('.btnn');
-            var wrapper = window.parent.document.getElementById('wizParDiv0');
-            btn.addEventListener('click', closePopUp);
-            function closePopUp() { 
-              setTimeout(() => {
-                wrapper.remove();
-              }, 0); 
-            }
-            </script>
-        
     </div>
 </body>
 
