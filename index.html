@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+        crossorigin="anonymous"></script>
+    <link rel="manifest" href="./manifest.json">
+    <title>NOC-Integration</title>
+
+</head>
+
+<body>
+    <style>
+        .col, .form-control, .col-md-3{
+            margin: 10px;
+        }
+        
+    </style>
+    <script>
+        var count = 0;
+        var clevertap = { event: [], profile: [], account: [], onUserLogin: [], notifications: [], privacy: [] };
+        clevertap.account.push({ "id": "W84-4WR-565Z" });
+        clevertap.privacy.push({ optOut: false });
+        clevertap.privacy.push({ useIP: false });
+        (function () {
+            var wzrk = document.createElement('script');
+            wzrk.type = 'text/javascript';
+            wzrk.async = true;
+            wzrk.src = ('https:' == document.location.protocol ? 'https://d2r1yp2w7bby2u.cloudfront.net' : 'http://static.clevertap.com') + '/js/clevertap.min.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(wzrk, s);
+        })();
+        clevertap.notifications.push({
+            "titleText": 'Would you like to receive Push Notifications?',
+            "bodyText": 'We promise to only send you relevant content and give you updates on your transactions',
+            "okButtonText": 'Sign me up!',
+            "rejectButtonText": 'No thanks',
+            "askAgainTimeInSeconds": 1,
+            "okButtonColor": '#f28046'
+        });
+
+
+        function profilePush() {
+            var fullName = document.getElementById('full').value;
+            var email = document.getElementById('email').value;
+            var gender = document.getElementById('gender').value;
+            var phone = document.getElementById("prefix").value + document.getElementById("number").value;
+            console.log(fullName, email, gender,phone);
+            clevertap.onUserLogin.push({
+                    Site: {
+                        Name: fullName, // User's name
+                        Email: email, // User's email
+                        Gender: gender === "" ? "M" : gender , // Can be either M or F
+                        Phone: phone,
+                        "MSG-email": true, // Disable email notifications
+                        "MSG-push": true, // Enable push notifications
+                    }
+                });
+        }
+
+        function addEventProp(){
+            var row = document.createElement("div")
+            row.setAttribute("class","row");
+            var col1 = document.createElement("div")
+            var col2 = document.createElement("div")
+            var col3 = document.createElement("div")
+            col1.setAttribute("class","col")
+            col2.setAttribute("class","col")
+            col3.setAttribute("class","col")
+            var propType = document.createElement("input");
+            propType.setAttribute("type","checkbox")
+            propType.setAttribute("class","form-check-input")
+            propType.setAttribute("id","propType"+count)
+            var lable = document.createElement("label");
+            lable.setAttribute("for","propType"+count);
+            lable.setAttribute("class","form-check-label");
+            lable.innerHTML = " Int";
+            col3.appendChild(propType);
+            col3.appendChild(lable);
+            var propName = document.createElement("input")
+            propName.setAttribute("class","form-control");
+            propName.setAttribute("type","text");
+            propName.setAttribute("placeholder","Property Name");
+            propName.setAttribute("id","propName"+count);
+            col1.appendChild(propName);
+            var propVal = document.createElement("input")
+            propVal.setAttribute("class","form-control");
+            propVal.setAttribute("type","text");
+            propVal.setAttribute("placeholder","Property Value");
+            propVal.setAttribute("id","propVal"+count);
+            col2.appendChild(propVal);
+            count++
+            row.appendChild(col1);
+            row.appendChild(col2);
+            row.appendChild(col3)
+            document.getElementById("eventPush").appendChild(row)
+
+        }
+
+        function eventPush(){
+
+            var eventName = document.getElementById("eventName").value;
+            var eventProps = []
+            for (var i =0 ;i < count; i++){
+                var propName = document.getElementById("propName"+i).value;
+                var propVal = document.getElementById("propVal"+i).value;
+                var propType = document.getElementById("propType"+i).checked;
+                if (propType){
+                    propVal = parseInt(propVal);
+                }
+                eventProps.push([propName,propVal])
+            }
+            var obj = Object.fromEntries(eventProps);
+            clevertap.event.push(eventName, obj);
+            console.log("Event Pushed :" , eventName)
+            
+            
+
+
+
+        }
+    </script>
+
+    <div class="container-fluid">
+        <div class="row" style="text-align: center;">
+            <h1>Profile Push</h1>
+            <hr>
+            <div class="col-md-6">
+                
+                <input class='form-control' type="text" id="full" placeholder="Full Name" required>
+                <input class='form-control' type="text" id="email" placeholder="Email">
+                <div class="row">
+                    <div class="col-md-3">
+                        <input class="form-control" type="text" id="prefix" value="+91">
+                    </div>
+                    <div class="col">
+                        <input class="form-control" type="text" id="number" placeholder="Phone Number">
+                    </div>
+                </div>
+                <select class="form-control" id="gender">
+                    <option value="">-Select Gender-</option>
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                </select>
+                <button class="btn btn-dark" onclick="profilePush()"> Submit </button>
+            </div>
+        </div>
+        <div class="row" style="text-align: center;">
+            <h1>Event Push</h1>
+            <hr>
+            <div class="col">
+                
+                <div class="row" id="eventPush">
+                    <div class="col">
+                        <input id="eventName" class="form-control" type="text" placeholder="Event Name"> 
+                    </div>
+                    <div class="col">
+                        <button class="btn btn-dark" onclick="addEventProp()"> + Event Property</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <button class="btn btn-dark" onclick="eventPush()"> Submit </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="btnn">CLOSE</div>
+        <script>
+            var btn = document.querySelector('.btnn');
+            var wrapper = window.parent.document.getElementById('wizParDiv0');
+            btn.addEventListener('click', closePopUp);
+            function closePopUp() { 
+              setTimeout(() => {
+                wrapper.remove();
+              }, 0); 
+            }
+            </script>
+        
+    </div>
+</body>
+
+</html>
