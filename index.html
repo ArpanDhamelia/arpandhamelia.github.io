@@ -16,13 +16,15 @@
 
 <body>
     <style>
-        .col, .form-control,.form-select{
-            margin: 10px;
+        .col,
+        .form-control,
+        .form-select {
+            margin: 5px;
         }
-        
     </style>
     <script>
-        var count = 0;
+        var eventCount = 0;
+        var profCount = 0;
         var clevertap = { event: [], profile: [], account: [], onUserLogin: [], notifications: [], privacy: [] };
         clevertap.account.push({ "id": "W84-4WR-565Z" });
         clevertap.privacy.push({ optOut: false });
@@ -43,105 +45,140 @@
             "askAgainTimeInSeconds": 1,
             "okButtonColor": '#f28046'
         });
+        function profilePush(id) {
+            var Identity = document.getElementById('id').value;
+            var profPorps = []
+            for (var i = 0; i < profCount; i++) {
+                var propName = document.getElementById("profName" + i).value;
+                var propVal = document.getElementById("profVal" + i).value;
+                var propType = document.getElementById("profType" + i).value;
+                if (propType === "number") propVal = parseInt(propVal);
+                if (propType === "Date") propVal = new Date(propVal);
+                profPorps.push([propName, propVal])
+            }
+            var obj = Object.fromEntries(profPorps);
+            obj['Identity'] = Identity;
+
+            try {
+                if (obj.Identity === "") throw "Identity cannot be empty";
+                if (id === "oul"){
+                    clevertap.onUserLogin.push({
+                    "Site": obj
+                })
+                }
+                else {
+                    clevertap.profile.push({
+                    "Site": obj
+                })
+                }
+                
+                document.getElementById('alert').setAttribute('class', "alert alert-success")
+                document.getElementById('alert').innerHTML = "Profile Added Successfully "
+
+            } catch (error) {
+                document.getElementById('alert').setAttribute('class', "alert alert-danger")
+                document.getElementById('alert').innerHTML = error
+            }
 
 
-        function profilePush() {
-            var fullName = document.getElementById('full').value;
-            var email = document.getElementById('email').value;
-            var gender = document.getElementById('gender').value;
-            var phone = document.getElementById("prefix").value + document.getElementById("number").value;
-            console.log(fullName, email, gender,phone);
-            if (phone.length < 10){
-                clevertap.onUserLogin.push({
-                    Site: {
-                        Name: fullName, // User's name
-                        Email: email, // User's email
-                        Gender: gender === "" ? "M" : gender , // Can be either M or F
-                        "MSG-email": true, // Disable email notifications
-                        "MSG-push": true, // Enable push notifications
-                    }
-                });
-            }
-            else{
-                clevertap.onUserLogin.push({
-                    Site: {
-                        Name: fullName, // User's name
-                        Email: email, // User's email
-                        Gender: gender === "" ? "M" : gender , // Can be either M or F
-                        Phone : phone,
-                        "MSG-email": true, // Disable email notifications
-                        "MSG-push": true, // Enable push notifications
-                    }
-                });
-            }
-            
         }
 
-        function addProp(){
-            var html = '<div class="col"><input class="form-control" type="text"  id="propName'+count+'" placeholder="Property Name"></div><div class="col-md-2 col"><select id="propType'+count+'" class="form-select col" onchange="changeType(this.id)" ><option value="text">Text</option><option value="number">Number</option><option value="date">Date</option></select></div><div class="col"><input type="text" id="propVal'+count+'" class="form-control" placeholder="Property Value"></div>'
+        function addProp() {
+            var html = '<div class="col"><input class="form-control" type="text"  id="propName' + eventCount + '" placeholder="Property Name"></div><div class="col-md-2 col"><select id="propType' + eventCount + '" class="form-select col" onchange="changeType(this.id)" ><option value="text">Text</option><option value="number">Number</option><option value="date">Date</option></select></div><div class="col"><input type="text" id="propVal' + eventCount + '" class="form-control" placeholder="Property Value"></div>'
             var row = document.createElement('div')
             row.setAttribute("class", "row")
             row.innerHTML = html
             document.getElementById('eventPush').appendChild(row);
-            count++;
+            eventCount++;
         }
 
-        function changeType(id){
-            var c = id.charAt(id.length-1)
-            document.getElementById("propVal"+c).type = document.getElementById(id).value
-            
+        function changeType(id) {
+            var c = id.charAt(id.length - 1)
+            if (id.slice(0, id.length - 1) === "profType") {
+                document.getElementById("profVal" + c).type = document.getElementById(id).value
+            }
+            else {
+                document.getElementById("propVal" + c).type = document.getElementById(id).value
+            }
+
+
         }
 
-        function eventPush(){
+
+        function eventPush() {
             var eventName = document.getElementById("eventName").value;
             var eventProps = []
-            for (var i =0 ;i < count; i++){
-                var propName = document.getElementById("propName"+i).value;
-                var propVal = document.getElementById("propVal"+i).value;
-                var propType = document.getElementById("propType"+i).value;
-                if (propType === "number") propVal =  parseInt(propVal);
+            for (var i = 0; i < eventCount; i++) {
+                var propName = document.getElementById("propName" + i).value;
+                var propVal = document.getElementById("propVal" + i).value;
+                var propType = document.getElementById("propType" + i).value;
+                if (propType === "number") propVal = parseInt(propVal);
                 if (propType === "Date") propVal = new Date(propVal);
-                eventProps.push([propName,propVal])
+                eventProps.push([propName, propVal])
             }
             var obj = Object.fromEntries(eventProps);
             clevertap.event.push(eventName, obj);
-            console.log("Event Pushed :" , eventName)
+            console.log("Event Pushed :", eventName)
             console.log(obj)
+        }
+
+        function addProffProp() {
+            var html = '<div class="col"><input class="form-control" type="text"  id="profName' + profCount + '" placeholder="Property Name"></div><div class="col-md-2 col"><select id="profType' + profCount + '" class="form-select col" onchange="changeType(this.id)" ><option value="text">Text</option><option value="number">Number</option><option value="date">Date</option></select></div><div class="col"><input type="text" id="profVal' + profCount + '" class="form-control" placeholder="Property Value"></div>'
+            var row = document.createElement('div')
+            row.setAttribute("class", "row")
+            row.innerHTML = html
+            document.getElementById('profPush').appendChild(row);
+            profCount++;
+        }
+
+        function changeIdType() {
+            document.getElementById('id').type = document.getElementById('idType').value;
         }
     </script>
 
     <div class="container-fluid">
         <div class="row" style="text-align: center;">
+            <div id="alert">
+            </div>
             <h1>Profile Push</h1>
             <hr>
-            <div class="col-md-6">
-                
-                <input class='form-control' type="text" id="full" placeholder="Full Name" required>
-                <input class='form-control' type="text" id="email" placeholder="Email">
-                <div class="row">
-                    <div class="col-md-3 col">
-                        <input class="form-control" type="text" id="prefix" value="+91">
+            <div class="col">
+                <div class="row" id="profPush">
+                    <div class="col">
+                        <select class="form-select" id="idType" onchange="changeIdType()">
+                            <option value="text">Custom ID</option>
+                            <option value="email">Email</option>
+                            <option value="number">Number (Custom No.)</option>
+                        </select>
                     </div>
                     <div class="col">
-                        <input class="form-control" type="text" id="number" placeholder="Phone Number">
+                        <input class="form-control" type="text" id="id" placeholder="Identity" required>
+                    </div>
+                    <div class="col">
+                        <button class="btn btn-dark" onclick="addProffProp()">
+                            + Profile Property
+                        </button>
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <button class="btn btn-dark" id="oul" onclick="profilePush(self.id)">onUserLogin</button>
+                    </div>
+                    <div class="col">
+                        <button class="btn btn-dark" id="pp" onclick="profilePush(self.id)">Profile Push</button>
                     </div>
                 </div>
-                <select class="form-select" id="gender">
-                    <option value="">-Select Gender-</option>
-                    <option value="M">Male</option>
-                    <option value="F">Female</option>
-                </select>
-                <button class="btn btn-dark" onclick="profilePush()"> Submit </button>
+
             </div>
         </div>
         <div class="row" style="text-align: center;">
             <h1>Event Push</h1>
             <hr>
             <div class="col">
-                
                 <div class="row" id="eventPush">
                     <div class="col">
-                        <input id="eventName" class="form-control" type="text" placeholder="Event Name"> 
+                        <input id="eventName" class="form-control" type="text" placeholder="Event Name">
                     </div>
                     <div class="col">
                         <button class="btn btn-dark col" onclick="addProp()"> + Event Property</button>
